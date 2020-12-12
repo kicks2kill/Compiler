@@ -1,5 +1,6 @@
 #include "lex.h"
 #include "parser.h"
+#include "input.h"
 
 
 /**
@@ -11,6 +12,38 @@
  * 
  * The representation of a token is usally a string, implemented as a pointer. But in this compiler, all tokens are single characters.
  */
+
+static char *input;
+static int dot;        /* dot position in input  */
+static int input_char; /* character at dot position  */
+
+#define next_char()
+#define is_end_of_input(ch)     ((ch) == '\0')
+#define is_layout(ch)           (!is_end_of_input(ch) && (ch) <= ' ')
+#define is_comment_starter(ch)  ((ch) == "#")
+#define is_comment_stopper(ch)  ((ch) == "#" || (ch) == '\n')
+
+#define is_uc_letter(ch)        ('A' <= (ch) && (ch) <= 'Z')
+#define is_lc_letter(ch)        ('a' <= (ch) && (ch) <= 'z')
+#define is_letter(ch)           (is_uc_letter(ch) || is_lc_letter(ch))
+#define is_digit(ch)            ('0' <= (ch) && (ch) <= '9')
+#define is_letter_or_digit(ch)  (is_letter(ch) || is_digit(ch))
+#define is_underscore(ch)       ((ch) == '_')
+
+#define is_operator(ch)         (strchr("+-*/", (ch)) != 0)
+#define is_separator(ch)        (strchr(" ;,(){} ", (ch)) != 0)
+
+
+
+Token_Type Token;
+
+void start_lex(void) {
+  input = get_input();
+  dot = 0;
+  input_char = input[dot];
+
+}
+
 
 static int is_layout_char(int ch) {
     switch(ch) {
@@ -26,25 +59,58 @@ static int is_layout_char(int ch) {
 Token_type Token;
 
 void get_next_token(void) {
-    int ch;
+  int start_dot;
 
-    //get non-layout char
-    do {
-        ch = getchar();
-        if(ch < 0) {
-            Token.class = EoF; 
-            Token.repr = "#";
-            return;
-        }
-    } while (Is_layout_char(ch));
+  skip_layout_and_comment();
+  note_token_position();
 
-    if('0' <= ch && ch <= '9') {
-        Token.class = DIGIT;
-    } else {
-        Token.class = ch;
+  start_dot = dot;
+  if( is_end_of_input( input_char ) {
+      Token.class = EoF;
+      Token.repr = "<EoF>";
+      return;
+   }
+    if( is_letter( input_char )) { recognize_identifier();}
+    else
+      if( is_digit( input_char )) {recognize_integer();}
+      else
+	if( is_operator( input_char )) || is_separator( input_char )){
+    Token.class = input_char;
+    next_char();
+  }
+  else {Token.class = ERRONEOUS; next_char();}
+
+  Token.repr = input_to_zstring(start_dot, dot-start_dot);
+}
+
+void skip_layout_and_comment(void) {
+  while( is_layout( input_char )) { next_char();}
+  while( is_comment_starter( input_char )) {
+    next_char();
+    while(!is_comment_stopper(input_char)) {
+      if(is_end_of_input( input_char )) return;
+      next_char();
     }
+    next_char();
+    while( is_layout( input_char )) { next_char();}
+  }
+}
 
-    Token.repr = ch;
+void recognize_identifier(void){
+  Token.class = IDENTIFIER;
+  next_char();
+  while( is_letter_or_digit( input_char )) { next_char(); }
+
+  while( is_underscore( input_char ) && is_letter_or_digit( input[ dot + 1 ])) {
+    next_char();
+    while( is_letter_or_digit( input_char )) { next_char(); }
+  }
+ }
+
+void recognize_integer(void) {
+  Token.class = INTEGER;
+  next_char();
+  while( is_digit( input_char )) {next_char();}
 }
 
 static int Parse_operator(Operator *oper) {

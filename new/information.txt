@@ -1,0 +1,12 @@
+//Brief explanation of how this compiler will work and compilers in general.
+
+//  // Lex
+There are only a few tokens in our language which are (,), +, *, and digit. these are five different tokens but digit consists of ten, so therefore we have 15 tokens.
+We *are* concerned about what type of digit is present inthe input because our back-end needs to know. 
+Therefore we split our information about the token into two parts, the class and its representation.
+
+
+// // General
+This parsing approach that is used is called "recursive descent parsing" and is defined by a set of routines that descend recursively.
+It is a rather weak parsing method and makes for inferior error diagnostics but is applicable for my purposes and I will eventually swap out for a much more efficient method.
+    (Maybe Predictive Recursive Descent Parsing)
