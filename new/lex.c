@@ -35,7 +35,7 @@ static int input_char; /* character at dot position  */
 #define OPERATOR_MASK(1 << 5)
 #define LETTER_MASK             ( UC_LETTER_MASK | LC_LETTER_MASK )
 
-#define bits_of(ch)             ( charbits[( ch )&0377])
+#define bits_of(ch)             ( charbits[( ch )&0377]) /* ANDing by octal number 0377 is full 1s in binary. */
 
 #define is_end_of_input(ch)     (( ch ) == '\0')
 
@@ -138,8 +138,15 @@ static int Parse_operator(Operator *oper) {
     }
     return 0;
 }
-
-static const char is_operator_bit[256] = {
+/* We need an 8-bit character which can have at most 256 values, and the outcome of the macro is one bit.
+   This suggests representing the table of answers as an array A of 256 1-bit elements, in which element A[ch] contains the result for parameter ch.
+   Since few languages offer 1-bit arrays, and if they do - it may be slow. We decide to sacrifice 7 x 256 bits and allocate an array of 256 bytes for the answer.
+   ---
+   Perform a table lookup and manually allocate instead of relying on C compiler.
+   Here, we can notice that the leftmost 7 bits of each byte are always zero, and the idea suggests iteself to use these bits to store outcomes of some of the other functions.
+   So we can use the proper bit for a function that will be extracted by ANDing with a mask in which one bit is set to 1 at the proper bit position.
+ */
+static const char charbits[256] = {
   0000, /* Position 0 */
   0040, /* '*', Position 42 */
   0040, /*  '+'  */
