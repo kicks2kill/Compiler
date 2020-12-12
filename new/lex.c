@@ -23,15 +23,27 @@ static int input_char; /* character at dot position  */
 #define is_comment_starter(ch)  ((ch) == "#")
 #define is_comment_stopper(ch)  ((ch) == "#" || (ch) == '\n')
 
-#define is_uc_letter(ch)        ('A' <= (ch) && (ch) <= 'Z')
-#define is_lc_letter(ch)        ('a' <= (ch) && (ch) <= 'z')
-#define is_letter(ch)           (is_uc_letter(ch) || is_lc_letter(ch))
 #define is_digit(ch)            ('0' <= (ch) && (ch) <= '9')
 #define is_letter_or_digit(ch)  (is_letter(ch) || is_digit(ch))
 #define is_underscore(ch)       ((ch) == '_')
 
-#define is_operator(ch)         (strchr("+-*/", (ch)) != 0)
+
 #define is_separator(ch)        (strchr(" ;,(){} ", (ch)) != 0)
+
+#define UC_LETTER_MASK(1 << 1)
+#define LC_LETTER_MASK( 1 << 2)
+#define OPERATOR_MASK(1 << 5)
+#define LETTER_MASK             ( UC_LETTER_MASK | LC_LETTER_MASK )
+
+#define bits_of(ch)             ( charbits[( ch )&0377])
+
+#define is_end_of_input(ch)     (( ch ) == '\0')
+
+#define is_uc_letter(ch)        ( bits_of(ch) & UC_LETTER_MASK)
+#define is_lc_letter(ch)        ( bits_of(ch) & LC_LETTER_MASK)
+#define is_letter(ch)           ( bits_of(ch) & LETTER_MASK)
+#define is_operator(ch)         ( bits_of(ch) & OPERATOR_MASK)
+
 
 
 
@@ -127,6 +139,20 @@ static int Parse_operator(Operator *oper) {
     return 0;
 }
 
+static const char is_operator_bit[256] = {
+  0000, /* Position 0 */
+  0040, /* '*', Position 42 */
+  0040, /*  '+'  */
+  0000, /* Position 64 */
+  0002, /* 'A' */
+  0002, /* 'B'  */
+  0000, /* Position 96 */
+  0004, /* 'a' */
+  0004, /* 'b' */ 
+  0000 /* Position 255 */
+};
+
+  
 static int Parse_expression(Expression **expr_p) {
     Expression *expr = *expr_p = new_expression();
 
