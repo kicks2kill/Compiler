@@ -34,3 +34,27 @@ int Parse_program(AST_Node **icode_p) {
     return 0;
 }
 
+int input(void){
+  return expression() && require(token(EoF));
+}
+
+int expression(void){
+  return term() && require(rest_expression());
+}
+
+int term(void) {
+  return token(IDENTIFIER) || parenthesized_expression();
+}
+
+int parenthesized_expression(void){
+  return token('(') && require(expression()) && require(token(')'));
+}
+
+int rest_expression(void){
+  return token('+') && require(expression()) || 1;
+}
+
+int token(int tk){
+  if(tk != Token.class) return 0;
+  get_next_token(); return 1;
+}

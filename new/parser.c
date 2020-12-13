@@ -1,5 +1,73 @@
 #include "parser.h"
 
+void input(void){
+  switch(Token.class){
+  case IDENTIFIER:
+  case '(':
+    expression();
+    token(EoF);
+    break;
+  default:
+    error();
+  }
+}
+
+void expression(void) {
+  switch(Token.class){
+  case IDENTIFIER:
+  case '(':
+    term();
+    rest_expression();
+    break;
+  default:
+    error();
+  }
+}
+
+void term(void){
+  switch(Token.class) {
+  case IDENTIFIER:
+    token(IDENTIFIER);
+    break;
+  case '(':
+    parenthesized_expression();
+    break;
+  default:
+    error();
+  }
+}
+
+void parenthesized_expression(void){
+  switch(Token.class){
+  case '(':
+    token('(');
+    expression();
+    token(')');
+    break;
+  default:
+    error();
+  }
+}
+
+void rest_expression(void){
+  switch(Token.class){
+  case '+':
+    token('+');
+    expression();
+    break;
+  case EoF:
+  case ')':
+    break;
+  default:
+    error();
+  }
+}
+
+void token(int tk){
+  if( tk != Token.class) error();
+  get_next_token();
+}
+
 static int Parse_operator(Operator *oper) {
     if(Token.class == '+') {
         *oper = '+';
@@ -49,3 +117,5 @@ static int Parse_expression(Expression **expr_p) {
     free_expression(expr);
     return 0;
 }
+
+
