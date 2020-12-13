@@ -1,16 +1,14 @@
+
 #include "lex.h"
 #include "parser.h"
 #include "input.h"
 
-
 /**
- * For token clsses that contain only one token which is also an ASCII character ('+' for example), the class is the ASCII value of the char itself.
- * These numbers over 255 are chosen to avoid collisions with any ASCII values of single chars.
+ * Let's imagine that we stop the attempt to match the input to a given token description before it has either succeded or failed.
+ * We would effectively have four components; the part of the input that has already been matched, the part of the regular expression that has matched it
+ * the part of the regular expression that must still find a match, and the rest of the input that will provide the match.
  * 
- * The representation of a token has at least two important uses. First, it is processed in one or more phases after the parser
- * to produce semantic information; examples are a numberic value produced from an integer token and an identification in some form from an identifier token
- * 
- * The representation of a token is usally a string, implemented as a pointer. But in this compiler, all tokens are single characters.
+ * The two parts of the regular expression are recombined into the original token description, with the gap marked by a dot and is called a dotted item.
  */
 
 static char *input;
@@ -35,7 +33,7 @@ static int input_char; /* character at dot position  */
 #define OPERATOR_MASK(1 << 5)
 #define LETTER_MASK             ( UC_LETTER_MASK | LC_LETTER_MASK )
 
-#define bits_of(ch)             ( charbits[( ch )&0377]) /* ANDing by octal number 0377 is full 1s in binary. */
+#define bits_of(ch)             ( charbits[( ch )&0377]) /* ANDing by octal number 0377 is full in binary. */
 
 #define is_end_of_input(ch)     (( ch ) == '\0')
 
