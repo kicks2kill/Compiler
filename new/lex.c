@@ -42,11 +42,6 @@ static int input_char; /* character at dot position  */
 #define is_letter(ch)           ( bits_of(ch) & LETTER_MASK)
 #define is_operator(ch)         ( bits_of(ch) & OPERATOR_MASK)
 
-
-
-
-Token_Type Token;
-
 void start_lex(void) {
   input = get_input();
   dot = 0;
@@ -66,13 +61,12 @@ static int is_layout_char(int ch) {
     }
 }
 
-Token_type Token;
+Token_Type Token;
 
 void get_next_token(void) {
   int start_dot;
 
   skip_layout_and_comment();
-  note_token_position();
 
   start_dot = dot;
   if( is_end_of_input( input_char ) {
@@ -90,7 +84,8 @@ void get_next_token(void) {
   }
   else {Token.class = ERRONEOUS; next_char();}
 
-  Token.repr = input_to_zstring(start_dot, dot-start_dot);
+  //TODO
+  // Token.repr = input_to_zstring(start_dot, dot-start_dot);
 }
 
 void skip_layout_and_comment(void) {

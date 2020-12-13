@@ -11,7 +11,7 @@
 typedef struct {
   char *file_name;
   int line_number;
-  int char_number
+  int char_number;
 } Position_in_File;
 
 typedef struct {
