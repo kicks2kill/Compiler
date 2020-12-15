@@ -1,4 +1,27 @@
 #include "parser.h"
+//This parser currently has LL(1) conflicts. Come back and fix this.
+void S(void){
+  switch(Token.class){
+  case 'a':
+    A();
+    token('a');
+    token('b');
+    break;
+  default: error();
+  }
+}
+
+void A(void){
+  switch(Token.class){
+  case 'a':
+    token('a');
+    break;
+  case 'a':
+    break;
+  default: error();
+  }
+}
+
 
 void input(void){
   switch(Token.class){
@@ -28,6 +51,9 @@ void term(void){
   switch(Token.class) {
   case IDENTIFIER:
     token(IDENTIFIER);
+    break;
+  case IDENTIFIER:
+    indexed_element();
     break;
   case '(':
     parenthesized_expression();

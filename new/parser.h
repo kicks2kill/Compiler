@@ -34,6 +34,22 @@ int Parse_program(AST_Node **icode_p) {
     return 0;
 }
 
+struct expr {
+  int type;
+  struct expr *expr;
+  struct term *term;
+};
+#define new_expr() ((struct expr *)malloc(sizeof(struct expr)))
+
+struct term {
+  int type;
+};
+#define new_term() ((struct term *)malloc(sizeof(struct term)))
+
+extern void print_expr(struct expr *e);
+extern void print_term(struct term *t);
+
+
 int input(void){
   return expression() && require(token(EoF));
 }

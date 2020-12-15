@@ -10,3 +10,30 @@ Therefore we split our information about the token into two parts, the class and
 This parsing approach that is used is called "recursive descent parsing" and is defined by a set of routines that descend recursively.
 It is a rather weak parsing method and makes for inferior error diagnostics but is applicable for my purposes and I will eventually swap out for a much more efficient method.
     (Maybe Predictive Recursive Descent Parsing)
+
+Since we are using a very naive approach, recursive descent parsing, there are grammar rules that will not be tested properly. Since this is the case, I will need to write a better parsing method. I will do this as I read more about top-down parsing.
+-----     In my first version, we have a routine called term() which is made by comparing the input token to the first token produced by the alternatives of term(): IDENTIFIER and parenthesized_expression(). So we have to precompute the sets of the first tokens produced by all alternatives in the grammar, the so-called FIRST sets.
+	  The first set of an alternative alpha, first(alpha), contains all terminals alpha can start with; if alpha can produce an empty string epsilon, this epsilon is included in the set first(alpha).
+	  Finding first(alpha) is trivial when alpha starts with a terminal char, but when alpha starts with a non-terminal char, say N, we have to find first(N) - however, this is a union of the first sets of its alternatives.
+
+---- TL;DR -----
+We will use a predictive recursive descent parser because it predicts the presence of a given alternative without trying to find out explicitly if it is there. 
+   A complication arises with the case label for the empty alternative in rest_expression. Since it does not itself start with any token, how can we decide whether it is the correct alternative? We base our decision on the following: when a non-terminal N produces a non-empty string, we see a token that N can start with; when N produces an empty string we see a token that can follow N. (Basically our approach of LL(1) parsing with nullable alternatives) This requires us to determine the set of tokens that can immediately follow a given non-terminal N; this set is called the FOLLOW set. FOLLOW(N)
+
+-- There are two ways we can strengthen our LL parser: 1) Increasing the look-ahead, 2) allowing dnyamic conflict resolvers. Dynamic conflict resolvers are conditions expressed in some programming language that are attached to alternatives that would otherwise conflict. When the parser has to decide between two conflicting alternatives, the condition is evaluated and if it yields true, the first alternative is considered to apply. If false, then it continues to the 2nd alternative.
+--- We see that in order to construct an LL91) parser, we have to compute for each non-terminal N, which of its alternatives to predict for each token t in the input.
+
+    // LL(1) and PDA
+       -- a push-down automaton (PDA) as derived from LL(1) grammars is deterministic, which means that each entry in the transition table contains only one value: It does not have to try more than one alternative. The stack of states contains both non-terminal and terminals; together they form the prediction to which the present input must conform (or if it contains a syntax error).
+       A PDA uses and modifies a push-down predicition stack and the input stream, and consults a transition table. On top of the stack and the first token in the input stream are consulted by and affected by the algorithm. The table is 2-dimensional and is indexed with non-terminals in one dimension and tokens in the other; the entry indexed with non-terminal N and a token t either contains the alternative of N that must be pridcted when the present input starts with t or is empty.
+       The automaton starts with the start symbol of the grammar as the only element on the prediction stack, and the token stream as the input. It knows two major and one minor types of moves; which one is applied depends on the top of the prediction stack:
+       --1) the prediction move applies when the top of the prediction stack is a non-terminal N. N is removed from the stack, and the transition table entry is looked up. If it contains no alternatives, we have found a syntax error in the input. If it contains one alternative of N, then this alternative is pushed onto the prediction stack. The LL(1) property guarantees that the entry will not contain more than one alternative.
+       --2) the match movie applies when the top of the prediction stack is a terminal. It must be equal to the first token of the present input. if it is not, there is a syntax error; if it is, both tokens are removed.
+       --3) termination: parsing terminates when the prediction stack is exhausted. If the input stream is also exhausted, the input has been parsed sucessfully; if not, there is a syntax error
+
+    // Acceptable-set method
+       A framework for systematically constructing a safe error recovery method. It centers on an "acceptable set" of tokens, and consists of three steps after an error has been detected:
+       1) construct the acceptable set A from the state of the parser, using some suitable algorithm C; it is required that A contain the EoF token.
+       2) Discard tokens from input stream until a token t(of A) from set A is found
+       3) resyncrhonize the parser by advancing it until it arrives in a state in which it consumes the token t(of A) from input using some suitable algorithm R; this prevents looping.
+       

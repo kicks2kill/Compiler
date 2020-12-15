@@ -1,6 +1,8 @@
 #include "parser.h"
 #include "lex.h"
 
+
+
 int main(void) {
   start_lex();
   get_next_token();
