@@ -1,0 +1,10 @@
+#include "lex.h"
+#include "parser.h"
+
+//elf version info
+struct sym_version {
+  char *lib;
+  char *version;
+  int out_index;
+  int prev_same_lib;
+};
